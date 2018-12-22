@@ -1,0 +1,426 @@
+#include "common.h"
+int allegro_with_monitor()
+{
+
+	if (!al_init()) // инициализация Аллегро (это макрос, который расширяется до al_install_system позволяет использовать функции allegro)
+	{
+		printf_s("Error inisializahion");
+		return -1;
+	}
+
+	display = al_create_display(width, height);// создание дисплея 
+	if (!display) // проверка дисплея 
+	{
+		printf_s("Error dispaly");
+		return -1;
+	}
+	return 0;
+}
+
+void init()
+{
+	al_init_font_addon(); //инициализация шрифтов
+	al_init_ttf_addon();// шрифт
+	al_init_primitives_addon();//инициализация примитива
+	al_install_keyboard();// установка клавиатуры 
+	al_init_image_addon();//установка картинок 
+	timer = al_create_timer(1.0 / fps);
+	event_queue = al_create_event_queue();//показывает программе ,что используем очередь 
+	al_register_event_source(event_queue, al_get_keyboard_event_source());//подключение клавиш к очереди 
+	al_register_event_source(event_queue, al_get_display_event_source(display));// чтобы дислей можно было закрыть на x
+	al_register_event_source(event_queue, al_get_timer_event_source(timer));
+}
+
+void pictures_and_convert()
+{
+	font = al_load_ttf_font("12160.ttf", 30, 0);
+	font_menu = al_load_ttf_font("12160.ttf", 40, 0);
+	Dragon = al_load_bitmap("Dragon/sprite_sheet_demo.PNG");
+	Dragon_R = al_load_bitmap("Dragon/Dragon_R.PNG");
+	Grey_dragon_L = al_load_bitmap("Dragon/Greydragon_L.PNG");
+	knight_go_R = al_load_bitmap("knight/running knight_R.PNG");
+	knight_go_L = al_load_bitmap("knight/running knight_L.PNG");
+	knightstan = al_load_bitmap("knight/knightstand.PNG");
+	crocodile_R = al_load_bitmap("Monster/crocodile_R.PNG");
+	Die = al_load_bitmap("Die/Died.PNG");
+	button1 = al_load_bitmap("Menu/Button1.PNG");
+	Bomb = al_load_bitmap("Dragon/Bomb.PNG");
+	Dragon_L_gold = al_load_bitmap("Dragon/Dragon_R(gold).PNG");
+	teleport = al_load_bitmap("knight/teleport.PNG");
+	Ogr_L = al_load_bitmap("Monster/Ogr_L.PNG");
+	al_convert_mask_to_alpha(Dragon, al_map_rgb(106, 76, 48));
+	al_convert_mask_to_alpha(Dragon_L_gold, al_map_rgb(106, 76, 48));
+	al_convert_mask_to_alpha(Dragon_R, al_map_rgb(106, 76, 48));
+	al_convert_mask_to_alpha(knight_go_R, al_map_rgb(66, 93, 41));
+	al_convert_mask_to_alpha(knight_go_L, al_map_rgb(66, 93, 41));
+	al_convert_mask_to_alpha(knightstan, al_map_rgb(66, 93, 41));
+	al_convert_mask_to_alpha(crocodile_R, al_map_rgb(97, 68, 43));
+	al_convert_mask_to_alpha(Die, al_map_rgb(97, 68, 43));
+	al_convert_mask_to_alpha(Bomb, al_map_rgb(110, 80, 52));
+	al_convert_mask_to_alpha(teleport, al_map_rgb(191, 123, 199));
+	al_convert_mask_to_alpha(Ogr_L, al_map_rgb(97, 68, 43));
+	al_convert_mask_to_alpha(Grey_dragon_L, al_map_rgb(106, 76, 48));
+	image = al_load_bitmap("Home.PNG");
+	image_width = al_get_bitmap_width(image);//Возвращает ширину растрового изображения в пикселях
+	image_height = al_get_bitmap_height(image);//Возвращает высоту растрового изображения в пикселях
+}
+
+void start_menu()
+{
+	al_draw_bitmap(image, width / 2 - image_width / 2, height / 2 - image_height / 2, 0);
+	al_draw_bitmap(button1, 550, 200, 0);
+	al_draw_bitmap(button1, 550, 400, 0);
+	al_draw_bitmap(button1, 550, 600, 0);
+	al_draw_textf(font_menu, al_map_rgb(0, 0, 0), 570, 30, 0, "   Running knight ");
+	al_draw_text(font_menu, al_map_rgb(255, 0, 0), 570, 230, 0, "1.    START GAME ");
+	al_draw_text(font_menu, al_map_rgb(255, 0, 0), 570, 430, 0, "2.       RECORD ");
+	al_draw_text(font_menu, al_map_rgb(255, 0, 0), 570, 630, 0, "3.     HANDBOOK");
+	al_flip_display();
+}
+
+void key_1()
+{
+	al_start_timer(timer);
+	count = 0;
+	mana = 800;
+	x_gold_dragon = 300, y_gold_dragon = 300;
+	x_dragon = 600, y_dragon = 400;
+	x_dragon_R = 1000, y_dragon_R = 100;
+	x_bomb = 1000, y_bomb = 120;
+	x_bomb2 = 600, y_bomb2 = 400;
+	x_bomb3 = 300, y_bomb3 = 300;
+	x_bomb4 = 1300, y_bomb4 = 200;
+	x_croco_R = 500, y_croco_R = 650;
+	x_knight = 10, y_knight = 650;
+	x_ogr = 1800, y_ogr = 650;
+	x_grey_dragon_L = -200, y_grey_dragon_L = 650;
+}
+
+void key_2()
+{
+	al_stop_timer(timer);
+	al_draw_bitmap(image, width / 2 - image_width / 2, height / 2 - image_height / 2, 0);
+	al_draw_bitmap(button1, 550, 400, 0);
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 570, 430, 0, "Record :%i ", count / 10);
+	al_flip_display();
+}
+
+void key_3()
+{
+	al_draw_bitmap(image, width / 2 - image_width / 2, height / 2 - image_height / 2, 0);
+	al_stop_timer(timer);
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 10, 0, "Q - teleport to left ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 50, 0, "E - teleport to right ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 90, 0, "Left - go to left ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 130, 0, "Right - go to right ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 170, 0, "Down - stop movement ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 210, 0, "1 - Start the game/Start over ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 250, 0, "2 - View record ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 290, 0, "3 - handbook ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 330, 0, "Home - main menu ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 370, 0, "Esc - pause ");
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 600, 410, 0, "Enter - resume ");
+	al_flip_display();
+}
+
+void key_esc()
+{
+	al_draw_bitmap(image, width / 2 - image_width / 2, height / 2 - image_height / 2, 0);
+	al_draw_bitmap(button1, 570, 430, 0);
+	al_draw_text(font, al_map_rgb(255, 255, 0), 750, 460, 0, "PAUSE");
+	static_cast<const int>(mana = 0);
+	al_stop_timer(timer);
+	al_flip_display();
+}
+
+void key_Q()
+{
+	if (mana > 100)
+	{
+		x_knight -= 200;
+		mana -= 100;
+		al_draw_bitmap(teleport, x_knight + 130, y_knight + 32, 0);
+	}
+
+	if (x_knight <= 0 - framewidth)
+	{
+		x_knight = width;
+	}
+}
+
+void key_E()
+{
+	if (mana > 100)
+	{
+		x_knight += 200;
+		mana -= 100;
+		al_draw_bitmap(teleport, x_knight, y_knight + 32, 0);
+	}
+
+	if (x_knight >= 1600 - framewidth)
+	{
+		x_knight = 0;
+	}
+}
+
+void timer_Start()
+{
+	switch (dir)
+	{
+	case DOWN:
+	{
+		al_draw_bitmap_region(knightstan, framewidth, 0, framewidth, frameheiht, x_knight, y_knight, 0);
+	}
+	break;
+	case RIGHT:
+	{
+		x_knight += 5;
+		al_draw_bitmap_region(knight_go_R, curframe*framewidth, 0, framewidth, frameheiht, x_knight, y_knight, 0);
+	}
+	break;
+	case LEFT:
+	{
+		x_knight -= 5;
+		al_draw_bitmap_region(knight_go_L, curframe*framewidth, 0, framewidth, frameheiht, x_knight, y_knight, 0);
+		break;
+	}
+	}
+
+	if (count / 10 > 20)
+	{
+		x_ogr -= 5;
+		al_draw_bitmap_region(Ogr_L, curframe*framewidth, 0, framewidth, frameheiht, x_ogr, y_ogr, 0);
+	}
+
+	if (count / 10 > 50)
+	{
+		x_grey_dragon_L += 5;
+		al_draw_bitmap_region(Grey_dragon_L, curframe*framewidth, 0, framewidth, frameheiht, x_grey_dragon_L, y_grey_dragon_L, 1);
+	}
+
+	if (count / 10 > 80)
+	{
+		x_ogr -= 1;
+		x_grey_dragon_L += 1;
+		x_croco_R += 1;
+	}
+
+	if ( count / 10 > 150 )
+	{
+		x_ogr -= 1;
+		x_grey_dragon_L += 1;
+		x_croco_R += 1;
+	}
+
+	if ( count / 10 > 200 )
+	{
+		x_ogr -= 1;
+		x_grey_dragon_L += 1;
+		x_croco_R += 1;
+	}
+}
+
+void draw_unit()
+{
+	al_draw_bitmap_region(Dragon, curframe*framewidth, 0, framewidth, frameheiht, x_dragon, y_dragon, 0);
+	al_draw_bitmap_region(Dragon_L_gold, curframe*framewidth, 0, framewidth, frameheiht, x_gold_dragon, y_gold_dragon, 0);
+	al_draw_bitmap_region(Dragon_R, curframe*framewidth, 0, framewidth, frameheiht, x_dragon_R, y_dragon_R, 0);
+	al_draw_bitmap_region(crocodile_R, curframe*framewidth, 0, framewidth, frameheiht, x_croco_R, y_croco_R, 0);
+	al_draw_bitmap_region(Bomb, curframe * frameheiht_bomb, 0, frameheiht_bomb, frameheiht_bomb, x_bomb, y_bomb, 0);
+	al_draw_bitmap_region(Bomb, curframe * frameheiht_bomb, 0, frameheiht_bomb, frameheiht_bomb, x_bomb2, y_bomb2, 0);
+	al_draw_bitmap_region(Bomb, curframe * frameheiht_bomb, 0, frameheiht_bomb, frameheiht_bomb, x_bomb3, y_bomb3, 0);
+	al_draw_textf(font, al_map_rgb(255, 0, 0), 1100, 430, ALLEGRO_ALIGN_CENTER, "Record : %i", count / 10);
+	al_draw_textf(font, al_map_rgb(0, 255, 0), 1100, 370, ALLEGRO_ALIGN_CENTER, "Mana : %i", mana / 8);
+}
+
+void movement_verification()
+{
+	if (++framecount >= framdelay)
+	{
+		if (++curframe >= maxDragon)
+		{
+			curframe = 0;
+			framecount = 0;
+		}
+		x_gold_dragon -= 5;
+		x_dragon -= 5;
+		x_dragon_R += 7;
+		x_croco_R += 3;
+		y_bomb += 8;
+		y_bomb2 += 2;
+		y_bomb3 += 6;
+
+		if (x_dragon <= 0 - framewidth)
+		{
+			x_dragon = width;
+		}
+
+		if (x_ogr <= 0 - framewidth)
+		{
+			x_ogr = width;
+		}
+
+		if (x_grey_dragon_L >= 1600)
+		{
+			x_grey_dragon_L = 0 - framewidth;
+		}
+
+		if (x_gold_dragon <= 0 - framewidth)
+		{
+			x_gold_dragon = width;
+		}
+
+		if (x_dragon_R >= 1600)
+		{
+			x_dragon_R = 0 - framewidth;
+		}
+
+		if (x_croco_R >= 1600)
+		{
+			x_croco_R = 0 - framewidth;
+		}
+
+		if (x_knight <= 0 - framewidth)
+		{
+			x_knight = width;
+		}
+
+		if (x_knight >= 1600 + framewidth)
+		{
+			x_knight = 0 - framewidth;
+		}
+
+		if ((x_dragon_R <= 1000) && (x_bomb = x_dragon_R))
+		{
+			y_bomb = 120;
+		}
+
+		if ((x_dragon >= 600) && (x_bomb2 = x_dragon + 60))
+		{
+			y_bomb2 = 420;
+		}
+
+		if ((x_gold_dragon >= 300) && (x_bomb3 = x_gold_dragon + 60))
+		{
+			y_bomb3 = 320;
+		}
+
+		if (mana <= 800)
+		{
+			mana += 2;
+		}
+	}
+
+	if ((pow((x_croco_R - x_knight), 2) + pow((y_croco_R - y_knight), 2) <= pow(R, 2))
+		|| (pow((x_ogr - x_knight), 2) + pow((y_ogr - y_knight), 2) <= pow(R, 2))
+		|| (pow((x_bomb - x_knight), 2) + pow((y_bomb - y_knight), 2) <= pow(R, 2))
+		|| (pow((x_bomb2 - x_knight), 2) + pow((y_bomb2 - y_knight), 2) <= pow(R, 2))
+		|| (pow((x_bomb3 - x_knight), 2) + pow((y_bomb3 - y_knight), 2) <= pow(R, 2))
+		|| (pow((x_grey_dragon_L - x_knight), 2) + pow((y_grey_dragon_L - y_knight), 2) <= pow(R, 2)))
+	{
+		al_stop_timer(timer);
+		x_knight = -300;
+		al_draw_bitmap(Die, width / 2 - image_width / 2, height / 2 - image_height / 2, 0);
+		al_draw_text(font_menu, al_map_rgb(255, 0, 0), 100, 250, 0, "YOU DIED ");
+		al_flip_display();
+
+	}
+}
+
+void garbage()
+{
+	al_destroy_event_queue(event_queue);//после работы очередь надо удалить 
+	al_destroy_display(display);// удаление дисплея
+	al_destroy_timer(timer);
+	al_destroy_bitmap(Dragon);
+	al_destroy_bitmap(Gold_dragon);
+	al_destroy_bitmap(Dragon_R);
+	al_destroy_bitmap(knight_go_R);
+	al_destroy_bitmap(knight_go_L);
+	al_destroy_bitmap(knightstan);
+	al_destroy_bitmap(crocodile_R);
+	al_destroy_bitmap(Die);
+	al_destroy_bitmap(Dragon_L_gold);
+	al_destroy_bitmap(Ogr_L);
+	al_destroy_bitmap(Grey_dragon_L);
+	al_destroy_bitmap(Bomb);
+}
+
+int main()
+{
+	allegro_with_monitor();
+	init();
+	pictures_and_convert();
+	start_menu();
+
+	while (!out) //пока не выйдет пользователь это будет выполняться 
+	{
+		ALLEGRO_EVENT event;//фиксирует любое действие пользователя 
+		al_wait_for_event(event_queue, &event);//связываем event с очередью 
+
+		if (event.type == ALLEGRO_EVENT_KEY_DOWN)// нажатие клавиш 
+		{
+			switch (event.keyboard.keycode)
+			{
+			case ALLEGRO_KEY_1:	key_1();
+				break;
+			case ALLEGRO_KEY_2:	key_2();
+				break;
+			case ALLEGRO_KEY_3:	key_3();
+				break;
+			case ALLEGRO_KEY_ESCAPE:
+			{
+				key_esc();
+			}
+				break;
+			case ALLEGRO_KEY_Q:	key_Q();
+				break;
+			case ALLEGRO_KEY_E:	key_E();
+				break;
+			case ALLEGRO_KEY_HOME:
+			{
+				al_stop_timer(timer);
+				static_cast<const int>(mana = 0);
+				start_menu();
+			}
+				break;
+			case ALLEGRO_KEY_ENTER:
+			{
+				al_start_timer(timer);
+			}
+				break;
+			case ALLEGRO_KEY_DOWN: dir = DOWN;
+				break;
+			case ALLEGRO_KEY_LEFT: dir = LEFT;
+				break;
+			case ALLEGRO_KEY_RIGHT: dir = RIGHT;
+				break;
+			}
+		}
+
+		if (event.type == ALLEGRO_EVENT_TIMER)// нажатие клавиш 
+		{
+			++count;
+			draw = true;
+			timer_Start();
+			draw_unit();
+		}
+
+		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)// дислей на x
+		{
+			out = true;
+		}
+
+		movement_verification();
+
+		if (draw && al_is_event_queue_empty(event_queue))
+		{
+			al_flip_display();
+			al_draw_bitmap(image, width / 2 - image_width / 2, height / 2 - image_height / 2, 0);
+			draw = false;
+		}
+	}
+	garbage();
+
+	return 0;
+}
